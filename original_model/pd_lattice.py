@@ -1,6 +1,7 @@
 import random
 import math
 import datetime
+import os
 
 from game_env import *
 from network_env import *
@@ -104,6 +105,13 @@ if __name__ == "__main__":
     log_file_name = "./logs/log_pd_lattice.txt"
     logger = create_logger(name="pd_lattice", file_name=log_file_name)
 
+    abs_path = os.path.abspath(os.path.join(os.getcwd(), './'))
+    dir_name = abs_path + '/results/'
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name)
+    result_file_name = dir_name + "results_pd_lattice.txt"
+    f = open(result_file_name, 'w')
+
     b_r = 2.0
     init_num = 10
     result = []
@@ -112,7 +120,10 @@ if __name__ == "__main__":
         popu_r, network_r, total_number_r, edges_r = run(b_r)
         result.append(evaluation(popu_r, edges_r, b_r))
     result = np.mean(result)
+
     logger.info(result)
+    f.write(str(result))
+    f.close()
 
 
 
