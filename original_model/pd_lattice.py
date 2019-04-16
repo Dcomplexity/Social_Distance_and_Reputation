@@ -6,6 +6,7 @@ from game_env import *
 from network_env import *
 from tools_file.log_file import *
 
+
 class Agent:
     def __init__(self, agent_id, link, strategy):
         self.agent_id = agent_id
