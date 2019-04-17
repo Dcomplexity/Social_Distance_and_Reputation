@@ -1,6 +1,5 @@
 import random
 import math
-import datetime
 import os
 
 from original_model.game_env import *
@@ -69,11 +68,11 @@ def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         ind = popu[i]
         ind_payoffs = ind.get_payoffs()
-        # while True:
-        #     j = random.choice(range(total_num))
-        #     if j != i:
-        #         break
-        j = random.choice(popu[i].get_link())
+        while True:
+            j = random.choice(range(total_num))
+            if j != i:
+                break
+        # j = random.choice(popu[i].get_link())
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
@@ -106,7 +105,7 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_lattice"
+    simulation_name = "pd_lattice_global_learn"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 

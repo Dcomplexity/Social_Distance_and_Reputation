@@ -1,10 +1,5 @@
-import random
-import math
-import datetime
-import os
-
-from original_model.game_env import *
-from original_model.network_env import *
+from social_distance_network.game_env import *
+from social_distance_network.network_env import *
 from tools_file.log_file import *
 
 
@@ -44,8 +39,9 @@ class Agent:
         self.payoffs = self.payoffs + p
 
 
-def initialize_population():
-    network, total_num, edges = generate_network(structure='2d_grid')
+def initialize_population(structure, mul_dimen, degree, group_size, group_base, group_length, dimen_l, alpha, beta):
+    network, total_num, edges = generate_network(structure, mul_dimen, degree, group_size, group_base,
+                                                 group_length, dimen_l, alpha, beta)
     popu = []
     for i in range(total_num):
         popu.append(Agent(i, network[i], random.randint(0, 1)))
@@ -69,10 +65,6 @@ def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         ind = popu[i]
         ind_payoffs = ind.get_payoffs()
-        # while True:
-        #     j = random.choice(range(total_num))
-        #     if j != i:
-        #         break
         j = random.choice(popu[i].get_link())
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
@@ -84,9 +76,10 @@ def evolution_one_step(popu, total_num, edges, b):
     return popu
 
 
-def run(b):
+def run(b, structure, mul_dimen, degree, group_size, group_base, group_length, dimen_l, alpha, beta):
     run_time = 100
-    popu, network, total_num, edges = initialize_population()
+    popu, network, total_num, edges = initialize_population(structure, mul_dimen, degree, group_size, group_base,
+                                                            group_length, dimen_l, alpha, beta)
     for _ in range(run_time):
         popu = evolution_one_step(popu, total_num, edges, b)
     return popu, network, total_num, edges
@@ -106,27 +99,37 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_lattice"
-    log_file_name = "./logs/log_%s.txt" % simulation_name
-    logger = create_logger(name=simulation_name, file_name=log_file_name)
+    log_file_name = "./logs/log_pd_er_random.txt"
+    logger = create_logger(name="pd_er_random", file_name=log_file_name)
 
     abs_path = os.path.abspath(os.path.join(os.getcwd(), './'))
     dir_name = abs_path + '/results/'
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    result_file_name = dir_name + "results_%s.csv" % simulation_name
+    result_file_name = dir_name + "results_pd_er_random.txt"
     f = open(result_file_name, 'w')
 
-    for b_r in np.arange(1.0, 3.1, 0.2):
-        logger.info("r value: " + str(b_r))
-        init_num = 5
-        result = []
-        for _ in range(init_num):
-            popu_r, network_r, total_numbeb_r, edges_r = run(b_r)
-            result.append(evaluation(popu_r, edges_r, b_r))
-        result = np.mean(result)
-        logger.info("frac_co: " + str(result))
-        f.write(str(b_r) + '\t' + str(result) + '\n')
+    b_r = 2.0
+    init_num = 10
+    group_size_r = 50
+    group_base_r = 2
+    group_length_r = 6
+    mul_dimen_r = 5
+    dimen_l_r = 1
+    degree_r = 8
+    alpha_r = 1
+    beta_r = 1
+    total_num_r = group_size_r * (group_base_r ** (group_length_r - 1))
+    result = []
+    for _ in range(init_num):
+        logger.info(_)
+        popu_r, network_r, total_number_r, edges_r = run(b_r, "er_random", mul_dimen_r, degree_r, group_size_r,
+                                                         group_base_r, group_length_r, dimen_l_r, alpha_r, beta_r)
+        result.append(evaluation(popu_r, edges_r, b_r))
+    result = np.mean(result)
+
+    logger.info(result)
+    f.write(str(result))
     f.close()
 
 

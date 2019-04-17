@@ -1,6 +1,5 @@
 import random
 import math
-import datetime
 import os
 
 from original_model.game_env import *
@@ -45,7 +44,7 @@ class Agent:
 
 
 def initialize_population():
-    network, total_num, edges = generate_network(structure='2d_grid')
+    network, total_num, edges = generate_network(structure='ba_graph')
     popu = []
     for i in range(total_num):
         popu.append(Agent(i, network[i], random.randint(0, 1)))
@@ -77,7 +76,7 @@ def evolution_one_step(popu, total_num, edges, b):
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
-        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs)))
+        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs) / 100))
         t2 = random.random()
         if t2 < t1:
             ind.set_strategy(opponent_ostrategy)
@@ -106,7 +105,7 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_lattice"
+    simulation_name = "pd_ba"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 

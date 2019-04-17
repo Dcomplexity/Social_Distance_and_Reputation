@@ -1,10 +1,5 @@
-import random
-import math
-import datetime
-import os
-
-from original_model.game_env import *
-from original_model.network_env import *
+from social_distance_network.game_env import *
+from social_distance_network.network_env import *
 from tools_file.log_file import *
 
 
@@ -44,24 +39,32 @@ class Agent:
         self.payoffs = self.payoffs + p
 
 
-def initialize_population():
-    network, total_num, edges = generate_network(structure='2d_grid')
+def initialize_population(structure, mul_dimen, degree, group_size, group_base, group_length, dimen_l, alpha, beta):
+    network, total_num, edges = generate_network(structure, mul_dimen, degree, group_size, group_base,
+                                                 group_length, dimen_l, alpha, beta)
     popu = []
     for i in range(total_num):
         popu.append(Agent(i, network[i], random.randint(0, 1)))
     return popu, network, total_num, edges
 
 
-# Donation Game
-def evolution_one_step(popu, total_num, edges, b):
+# Public Goods Game
+def evolution_one_step(popu, total_num, edges, r):
     for i in range(total_num):
         popu[i].set_payoffs(0)
-    for edge in edges:
-        i = edge[0]
-        j = edge[1]
-        r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
-        popu[i].add_payoffs(r_i)
-        popu[j].add_payoffs(r_j)
+    for i in range(total_num):
+        pgg_agent = list()
+        pgg_agent.append(i)
+        for j in popu[i].get_link():
+            pgg_agent.append(j)
+        pgg_strategy = list()
+        for j in pgg_agent:
+            pgg_strategy.append(popu[j].get_strategy())
+        pgg_payoffs = pgg_game(pgg_strategy, r)
+        for k in range(len(pgg_agent)):
+            j = pgg_agent[k]
+            popu[j].add_payoffs(pgg_payoffs[k])
+
     # Backup the strategy in this round
     for i in range(total_num):
         popu[i].set_ostrategy()
@@ -69,10 +72,6 @@ def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         ind = popu[i]
         ind_payoffs = ind.get_payoffs()
-        # while True:
-        #     j = random.choice(range(total_num))
-        #     if j != i:
-        #         break
         j = random.choice(popu[i].get_link())
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
@@ -84,20 +83,21 @@ def evolution_one_step(popu, total_num, edges, b):
     return popu
 
 
-def run(b):
+def run(r, structure, mul_dimen, degree, group_size, group_base, group_length, dimen_l, alpha, beta):
     run_time = 100
-    popu, network, total_num, edges = initialize_population()
+    popu, network, total_num, edges = initialize_population(structure, mul_dimen, degree, group_size, group_base,
+                                                            group_length, dimen_l, alpha, beta)
     for _ in range(run_time):
-        popu = evolution_one_step(popu, total_num, edges, b)
+        popu = evolution_one_step(popu, total_num, edges, r)
     return popu, network, total_num, edges
 
 
-def evaluation(popu, edges, b):
+def evaluation(popu, edges, r):
     sample_time = 20
     sample_strategy = []
     total_num = len(popu)
     for _ in range(sample_time):
-        popu = evolution_one_step(popu, total_num, edges, b)
+        popu = evolution_one_step(popu, total_num, edges, r)
         strategy = []
         for i in range(total_num):
             strategy.append(popu[i].get_strategy())
@@ -106,28 +106,35 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_lattice"
-    log_file_name = "./logs/log_%s.txt" % simulation_name
-    logger = create_logger(name=simulation_name, file_name=log_file_name)
+    log_file_name = "./logs/log_pgg_er_random.txt"
+    logger = create_logger(name="pgg_er_random", file_name=log_file_name)
 
     abs_path = os.path.abspath(os.path.join(os.getcwd(), './'))
     dir_name = abs_path + '/results/'
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    result_file_name = dir_name + "results_%s.csv" % simulation_name
+    result_file_name = dir_name + "results_pgg_er_random.txt"
     f = open(result_file_name, 'w')
 
-    for b_r in np.arange(1.0, 3.1, 0.2):
-        logger.info("r value: " + str(b_r))
-        init_num = 5
-        result = []
-        for _ in range(init_num):
-            popu_r, network_r, total_numbeb_r, edges_r = run(b_r)
-            result.append(evaluation(popu_r, edges_r, b_r))
-        result = np.mean(result)
-        logger.info("frac_co: " + str(result))
-        f.write(str(b_r) + '\t' + str(result) + '\n')
+    structure_r = "er_random"
+    r_r = 7.0
+    init_num = 10
+    group_size_r = 50
+    group_base_r = 2
+    group_length_r = 6
+    mul_dimen_r = 5
+    dimen_l_r = 1
+    degree_r = 8
+    alpha_r = -1
+    beta_r = 1
+    result = []
+    for _ in range(init_num):
+        logger.info(_)
+        popu_r, network_r, total_number_r, edges_r = run(r_r, structure_r, mul_dimen_r, degree_r, group_size_r,
+                                                         group_base_r, group_length_r, dimen_l_r, alpha_r, beta_r)
+        result.append(evaluation(popu_r, edges_r, r_r))
+    result = np.mean(result)
+
+    logger.info(result)
+    f.write(str(result))
     f.close()
-
-
-

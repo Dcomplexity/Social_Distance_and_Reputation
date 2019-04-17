@@ -4,19 +4,6 @@ from tools_file.log_file import *
 
 def pd_game_donation_game(st_x, st_y, b):
     if st_x == 1 and st_y == 1:
-        return b-1, b-1
-    elif st_x == 1 and st_y == 0:
-        return -1, b
-    elif st_x == 0 and st_y == 1:
-        return b, -1
-    elif st_x == 0 and st_y == 0:
-        return 0, 0
-    else:
-        return "Error"
-
-
-def pd_game_b(st_x, st_y, b):
-    if st_x == 1 and st_y == 1:
         return 1, 1
     elif st_x == 1 and st_y == 0:
         return 0, b

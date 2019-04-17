@@ -1,6 +1,5 @@
 import random
 import math
-import datetime
 import os
 
 from original_model.game_env import *
@@ -45,7 +44,7 @@ class Agent:
 
 
 def initialize_population():
-    network, total_num, edges = generate_network(structure='2d_grid')
+    network, total_num, edges = generate_network(structure='ba_graph')
     popu = []
     for i in range(total_num):
         popu.append(Agent(i, network[i], random.randint(0, 1)))
@@ -56,12 +55,24 @@ def initialize_population():
 def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         popu[i].set_payoffs(0)
+    reputation = [0.0 for _ in range(total_num)]
+    for i in range(total_num):
+        co_num = 0
+        neigh_agent = list()
+        neigh_agent.append(i)
+        for j in popu[i].get_link():
+            neigh_agent.append(j)
+        for j in neigh_agent:
+            if popu[j].get_strategy() == 1:
+                co_num += 1
+        reputation[i] = co_num / len(neigh_agent)
     for edge in edges:
         i = edge[0]
         j = edge[1]
-        r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
-        popu[i].add_payoffs(r_i)
-        popu[j].add_payoffs(r_j)
+        if random.random() < reputation[i] * reputation[j]:
+            r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
+            popu[i].add_payoffs(r_i)
+            popu[j].add_payoffs(r_j)
     # Backup the strategy in this round
     for i in range(total_num):
         popu[i].set_ostrategy()
@@ -69,15 +80,15 @@ def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         ind = popu[i]
         ind_payoffs = ind.get_payoffs()
-        # while True:
-        #     j = random.choice(range(total_num))
-        #     if j != i:
-        #         break
-        j = random.choice(popu[i].get_link())
+        while True:
+            j = random.choice(range(total_num))
+            if j != i:
+                break
+        # j = random.choice(popu[i].get_link())
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
-        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs)))
+        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs) / (ind_payoffs + opponent_payoffs + 0.1)))
         t2 = random.random()
         if t2 < t1:
             ind.set_strategy(opponent_ostrategy)
@@ -106,7 +117,7 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_lattice"
+    simulation_name = "pd_reputation_ba_global_learn"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 
