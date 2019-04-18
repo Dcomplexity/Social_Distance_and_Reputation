@@ -1,4 +1,4 @@
-from tools_file.log_file import *
+from sim_env.log_file import *
 from social_distance_network.network_build import *
 
 

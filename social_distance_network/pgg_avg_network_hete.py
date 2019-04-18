@@ -1,6 +1,6 @@
 from social_distance_network.game_env import *
 from social_distance_network.network_env import *
-from tools_file.log_file import *
+from sim_env.log_file import *
 
 
 class Agent:

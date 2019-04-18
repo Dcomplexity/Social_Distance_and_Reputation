@@ -3,9 +3,9 @@ import math
 import datetime
 import os
 
-from game_env import *
-from network_env import *
-from log_file import *
+from sim_env.game_env import *
+from sim_env.network_env import *
+from sim_env.log_file import *
 
 
 class Agent:
@@ -56,12 +56,12 @@ def initialize_population():
 def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         popu[i].set_payoffs(0)
-    # for edge in edges:
-    #     i = edge[0]
-    #     j = edge[1]
-    #     r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
-    #     popu[i].add_payoffs(r_i)
-    #     popu[j].add_payoffs(r_j)
+    for edge in edges:
+        i = edge[0]
+        j = edge[1]
+        r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
+        popu[i].add_payoffs(r_i)
+        popu[j].add_payoffs(r_j)
     for i in range(total_num):
         play_agent = popu[i].get_link()
     # Backup the strategy in this round

@@ -1,5 +1,5 @@
 import numpy as np
-from log_file import *
+from sim_env.log_file import *
 
 
 def pd_game_donation_game(st_x, st_y, b):

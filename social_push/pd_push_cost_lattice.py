@@ -5,7 +5,7 @@ import os
 
 from social_push.game_env import *
 from social_push.network_env import *
-from tools_file.log_file import *
+from sim_env.log_file import *
 
 
 class Agent:

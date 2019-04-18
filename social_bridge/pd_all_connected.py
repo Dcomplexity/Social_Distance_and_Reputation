@@ -3,9 +3,9 @@ import math
 import datetime
 import os
 
-from game_env import *
-from network_env import *
-from log_file import *
+from sim_env.game_env import *
+from sim_env.network_env import *
+from sim_env.log_file import *
 
 
 class Agent:
