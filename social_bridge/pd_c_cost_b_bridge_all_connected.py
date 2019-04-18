@@ -54,7 +54,7 @@ def initialize_population():
     network, total_num, edges = generate_network(structure='2d_grid')
     popu = []
     for i in range(total_num):
-        popu.append(Agent(i, network[i], np.random.choice([0, 1, 2, 3])))
+        popu.append(Agent(i, network[i], np.random.choice([0, 1, 2])))
     return popu, network, total_num, edges
 
 
@@ -71,14 +71,14 @@ def evolution_one_step(popu, total_num, edges, b, cost):
                 play_agent.append(j)
         play_agent_l.append(play_agent)
         for j in play_agent:
-            r_i, r_j = pd_game_cost_b(popu[i].get_strategy(), popu[j].get_strategy(), b)
+            r_i, r_j = pd_game_c_cost_b(popu[i].get_strategy(), popu[j].get_strategy(), b)
             popu[i].add_payoffs(r_i)
             popu[j].add_payoffs(r_j)
     for i in range(total_num):
-        if popu[i].get_strategy() == 1 or popu[i].get_strategy() == 3:
+        if popu[i].get_strategy() == 2:
             poten_agent = []
             for j in play_agent_l[i]:
-                if popu[j].get_strategy() == 2 or popu[j].get_strategy() == 3:
+                if popu[j].get_strategy() == 1 or popu[j].get_strategy() == 2:
                     poten_agent.append(j)
                 if len(poten_agent) > 1:
                     poten_combination = itertools.combinations(poten_agent, 2)
@@ -86,7 +86,7 @@ def evolution_one_step(popu, total_num, edges, b, cost):
                         popu[i].add_payoffs(-cost)
                         co_i = co_pair[0]
                         co_j = co_pair[1]
-                        r_i, r_j = pd_game_cost_b(popu[co_i].get_strategy(), popu[co_j].get_strategy(), b)
+                        r_i, r_j = pd_game_c_cost_b(popu[co_i].get_strategy(), popu[co_j].get_strategy(), b)
                         popu[co_i].add_payoffs(r_i)
                         popu[co_j].add_payoffs(r_j)
     # Backup the strategy in this round
@@ -125,7 +125,7 @@ def evaluation(popu, edges, b, cost):
     total_num = len(popu)
     for _ in range(sample_time):
         popu = evolution_one_step(popu, total_num, edges, b, cost)
-        strategy_dist = [0 for _ in range(4)]
+        strategy_dist = [0 for _ in range(3)]
         for i in range(total_num):
             strategy_dist[popu[i].get_strategy()] += 1
         strategy_dist = np.array(strategy_dist) / total_num
@@ -134,7 +134,7 @@ def evaluation(popu, edges, b, cost):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_cost_b_bridge_all_connected"
+    simulation_name = "pd_c_cost_b_bridge_all_connected"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 
