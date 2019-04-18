@@ -4,9 +4,9 @@ import datetime
 import os
 import itertools
 
-from social_bridge.game_env import *
-from social_bridge.network_env import *
-from tools_file.log_file import *
+from game_env import *
+from network_env import *
+from log_file import *
 
 
 class Agent:

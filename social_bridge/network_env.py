@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-from tools_file.log_file import *
+from log_file import *
 
 
 def average_degree(graph, total_num):
