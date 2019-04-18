@@ -4,6 +4,9 @@ import datetime
 import os
 import pandas as pd
 
+import sys
+sys.path.append("..")
+
 from sim_env.game_env import *
 from sim_env.network_env import *
 from sim_env.log_file import *
