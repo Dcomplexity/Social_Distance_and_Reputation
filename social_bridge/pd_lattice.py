@@ -2,6 +2,7 @@ import random
 import math
 import datetime
 import os
+import pandas as pd
 
 from sim_env.game_env import *
 from sim_env.network_env import *
@@ -56,14 +57,18 @@ def initialize_population():
 def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         popu[i].set_payoffs(0)
-    for edge in edges:
-        i = edge[0]
-        j = edge[1]
-        r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
-        popu[i].add_payoffs(r_i)
-        popu[j].add_payoffs(r_j)
+    # for edge in edges:
+    #     i = edge[0]
+    #     j = edge[1]
+    #     r_i, r_j = pd_game_donation_game(popu[i].get_strategy(), popu[j].get_strategy(), b)
+    #     popu[i].add_payoffs(r_i)
+    #     popu[j].add_payoffs(r_j)
     for i in range(total_num):
-        play_agent = popu[i].get_link()
+        play_agent_l = popu[i].get_link()
+        for j in play_agent_l:
+            r_i, r_j = pd_game_b(popu[i].get_strategy(), popu[j].get_strategy(), b)
+            popu[i].add_payoffs(r_i)
+            popu[j].add_payoffs(r_j)
     # Backup the strategy in this round
     for i in range(total_num):
         popu[i].set_ostrategy()
@@ -71,11 +76,11 @@ def evolution_one_step(popu, total_num, edges, b):
     for i in range(total_num):
         ind = popu[i]
         ind_payoffs = ind.get_payoffs()
-        # while True:
-        #     j = random.choice(range(total_num))
-        #     if j != i:
-        #         break
-        j = random.choice(popu[i].get_link())
+        while True:
+            j = random.choice(range(total_num))
+            if j != i:
+                break
+        # j = random.choice(popu[i].get_link())
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
@@ -100,11 +105,12 @@ def evaluation(popu, edges, b):
     total_num = len(popu)
     for _ in range(sample_time):
         popu = evolution_one_step(popu, total_num, edges, b)
-        strategy = []
+        strategy_dist = [0 for _ in range(2)]
         for i in range(total_num):
-            strategy.append(popu[i].get_strategy())
-        sample_strategy.append(np.mean(strategy))
-    return np.mean(sample_strategy)
+            strategy_dist[popu[i].get_strategy()] += 1
+        strategy_dist = np.array(strategy_dist) / total_num
+        sample_strategy.append(strategy_dist)
+    return np.mean(sample_strategy, axis=0)
 
 
 if __name__ == "__main__":
@@ -119,16 +125,22 @@ if __name__ == "__main__":
     result_file_name = dir_name + "results_%s.csv" % simulation_name
     f = open(result_file_name, 'w')
 
-    for b_r in np.arange(1.0, 3.1, 0.2):
+    b_r_l = []
+    result_l = []
+    for b_r in np.arange(1.0, 3.1, 0.1):
+        b_r = round(b_r, 2)
+        b_r_l.append(b_r)
         logger.info("r value: " + str(b_r))
         init_num = 5
         result = []
         for _ in range(init_num):
             popu_r, network_r, total_num_r, edges_r = run(b_r)
             result.append(evaluation(popu_r, edges_r, b_r))
-        result = np.mean(result)
+        result = np.mean(result, axis=0)
         logger.info("frac_co: " + str(result))
-        f.write(str(b_r) + '\t' + str(result) + '\n')
+        result_l.append(result)
+    result_pd = pd.DataFrame(result_l, index=b_r_l)
+    result_pd.to_csv(f)
     f.close()
 
 
