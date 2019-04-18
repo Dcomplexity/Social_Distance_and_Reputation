@@ -100,7 +100,7 @@ def evolution_one_step(popu, total_num, edges, b):
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
-        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs)))
+        t1 = 1 / (1 + math.e ** (2.0 * (ind_payoffs - opponent_payoffs)))
         t2 = random.random()
         if t2 < t1:
             ind.set_strategy(opponent_ostrategy)

@@ -9,6 +9,9 @@ from sim_env.game_env import *
 from sim_env.network_env import *
 from sim_env.log_file import *
 
+import sys
+sys.path.append("..")
+
 
 class Agent:
     def __init__(self, agent_id, link, strategy):
@@ -99,7 +102,7 @@ def evolution_one_step(popu, total_num, edges, b):
         opponent = popu[j]
         opponent_payoffs = opponent.get_payoffs()
         opponent_ostrategy = opponent.get_ostrategy()
-        t1 = 1 / (1 + math.e ** (10 * (ind_payoffs - opponent_payoffs) / 100))
+        t1 = 1 / (1 + math.e ** (2.0 * (ind_payoffs - opponent_payoffs) / 100))
         t2 = random.random()
         if t2 < t1:
             ind.set_strategy(opponent_ostrategy)
