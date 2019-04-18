@@ -1,5 +1,5 @@
 import numpy as np
-from log_file import *
+from sim_env.log_file import *
 
 
 def pd_game_donation_game(st_x, st_y, b):
@@ -36,6 +36,19 @@ def pd_game_b(st_x, st_y, b):
     elif st_x == 0 and st_y == 1:
         return b, 0
     elif st_x == 0 and st_y == 0:
+        return 0, 0
+    else:
+        return "Error"
+
+
+def pd_game_c_cost_b(st_x, st_y, b):
+    if (st_x == 1 or st_x == 2) and (st_y == 1 or st_y == 2):
+        return 1, 1
+    elif (st_x == 1 or st_x == 2) and (st_y == 0):
+        return 0, b
+    elif (st_x == 0) and (st_y == 1 or st_y == 2):
+        return b, 0
+    elif (st_x == 0) and (st_y == 0):
         return 0, 0
     else:
         return "Error"
