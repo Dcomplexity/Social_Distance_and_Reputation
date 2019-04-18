@@ -55,7 +55,7 @@ def initialize_population():
 
 
 # Donation Game
-def evolution_one_step(popu, total_num, edges, b):
+def evolution_one_step(popu, total_num, edges, b, cost):
     for i in range(total_num):
         popu[i].set_payoffs(0)
     # for edge in edges:
@@ -80,7 +80,7 @@ def evolution_one_step(popu, total_num, edges, b):
                 if len(poten_agent) > 1:
                     poten_combination = itertools.combinations(poten_agent, 2)
                     for co_pair in poten_combination:
-                        popu[i].add_payoffs(-0.1)
+                        popu[i].add_payoffs(-cost)
                         co_i = co_pair[0]
                         co_j = co_pair[1]
                         r_i, r_j = pd_game_cost_b(popu[co_i].get_strategy(), popu[co_j].get_strategy(), b)
@@ -108,20 +108,20 @@ def evolution_one_step(popu, total_num, edges, b):
     return popu
 
 
-def run(b):
+def run(b, cost):
     run_time = 100
     popu, network, total_num, edges = initialize_population()
     for _ in range(run_time):
-        popu = evolution_one_step(popu, total_num, edges, b)
+        popu = evolution_one_step(popu, total_num, edges, b, cost)
     return popu, network, total_num, edges
 
 
-def evaluation(popu, edges, b):
+def evaluation(popu, edges, b, cost):
     sample_time = 20
     sample_strategy = []
     total_num = len(popu)
     for _ in range(sample_time):
-        popu = evolution_one_step(popu, total_num, edges, b)
+        popu = evolution_one_step(popu, total_num, edges, b, cost)
         strategy_dist = [0 for _ in range(4)]
         for i in range(total_num):
             strategy_dist[popu[i].get_strategy()] += 1
@@ -131,7 +131,7 @@ def evaluation(popu, edges, b):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_cost_bridge_lattice"
+    simulation_name = "pd_cost_b_bridge_lattice"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 
@@ -142,21 +142,27 @@ if __name__ == "__main__":
     result_file_name = dir_name + "results_%s.csv" % simulation_name
     f = open(result_file_name, 'w')
 
+    cost_r_l = []
+    for i in np.arange(0.0, 1.01, 0.1):
+        cost_r_l.append(round(i, 2))
     b_r_l = []
+    for i in np.arange(0.0, 3.01, 0.1):
+        b_r_l.append(round(i, 2))
     result_l = []
-    for b_r in np.arange(1.0, 3.1, 0.1):
-        b_r = round(b_r, 2)
-        b_r_l.append(b_r)
-        logger.info("r value: " + str(b_r))
-        init_num = 5
-        result = []
-        for _ in range(init_num):
-            popu_r, network_r, total_num_r, edges_r = run(b_r)
-            result.append(evaluation(popu_r, edges_r, b_r))
-        result = np.mean(result, axis=0)
-        logger.info("frac_co: " + str(result))
-        result_l.append(result)
-    result_pd = pd.DataFrame(result_l, index=b_r_l)
+    for cost_r in cost_r_l:
+        logger.info('cost value: ' + str(cost_r))
+        for b_r in b_r_l:
+            logger.info("r value: " + str(b_r))
+            init_num = 5
+            result = []
+            for _ in range(init_num):
+                popu_r, network_r, total_num_r, edges_r = run(b_r, cost_r)
+                result.append(evaluation(popu_r, edges_r, b_r, cost_r))
+            result = np.mean(result, axis=0)
+            logger.info("frac_co: " + str(result))
+            result_l.append(result)
+    m_index = pd.MultiIndex.from_product([cost_r_l, b_r_l], names=['cost', 'b'])
+    result_pd = pd.DataFrame(result_l, index=m_index)
     result_pd.to_csv(f)
     f.close()
 
