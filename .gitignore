@@ -107,3 +107,6 @@ venv.bak/
 *.txt
 *.csv
 .DS_Store
+*.pdf
+*.png
+*.ipynb
