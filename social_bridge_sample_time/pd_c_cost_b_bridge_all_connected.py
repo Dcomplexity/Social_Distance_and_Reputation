@@ -109,8 +109,8 @@ def evolution_one_step(popu, total_num, edges, b, cost):
     return popu
 
 
-def run(b, cost):
-    run_time = 1000
+def run(b, cost, run_time):
+    run_time = run_time
     popu, network, total_num, edges = initialize_population()
     for _ in range(run_time):
         popu = evolution_one_step(popu, total_num, edges, b, cost)
@@ -144,6 +144,7 @@ if __name__ == "__main__":
     result_file_name = dir_name + "results_%s.csv" % simulation_name
     f = open(result_file_name, 'w')
 
+    run_time_r = 1000
     sample_time_r = 200
     init_num = 10
     cost_r_l = []
@@ -154,12 +155,12 @@ if __name__ == "__main__":
         b_r_l.append(round(i, 2))
     result_l = []
     for cost_r in cost_r_l:
-        logger.info('cost value: ' + str(cost_r))
         for b_r in b_r_l:
-            logger.info("r value: " + str(b_r))
+            logger.info('cost value: ' + str(cost_r))
+            logger.info("b value: " + str(b_r))
             result = []
             for _ in range(init_num):
-                popu_r, network_r, total_num_r, edges_r = run(b_r, cost_r)
+                popu_r, network_r, total_num_r, edges_r = run(b_r, cost_r, run_time_r)
                 #result.append(evaluation(popu_r, edges_r, b_r, cost_r))
                 sample_result = evaluation(popu_r, edges_r, b_r, cost_r, sample_time_r)
                 for sample_i in sample_result:

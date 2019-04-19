@@ -13,8 +13,6 @@ from sim_env.network_env import *
 from sim_env.log_file import *
 
 
-
-
 class Agent:
     def __init__(self, agent_id, link, strategy):
         self.agent_id = agent_id
@@ -59,7 +57,6 @@ def initialize_population():
     return popu, network, total_num, edges
 
 
-# Donation Game
 def evolution_one_step(popu, total_num, edges, b, cost):
     for i in range(total_num):
         popu[i].set_payoffs(0)
@@ -113,16 +110,57 @@ def evolution_one_step(popu, total_num, edges, b, cost):
     return popu
 
 
-def run(b, cost, run_time):
-    run_time = run_time
+def run_time(b, cost, dir_name, simulation_name):
+    run_time = 1000
+    result_t = []
     popu, network, total_num, edges = initialize_population()
+
+    height = int(total_num ** 0.5)
+    width = int(total_num ** 0.5)
+
+    strategy_dist = [0 for _ in range(3)]
+    for i in range(total_num):
+        strategy_dist[popu[i].get_strategy()] += 1
+    strategy_dist = np.array(strategy_dist) / total_num
+    result_t.append(strategy_dist)
+
+    heatmap_dir_name = dir_name + '/' + simulation_name + '/'
+    if not os.path.isdir(heatmap_dir_name):
+        os.makedirs(heatmap_dir_name)
+
+    heatmap_file_name = heatmap_dir_name + 'heatmap_%s.csv' % 0
+    heatmap_f = open(heatmap_file_name, 'w')
+    strategy_heatmap = [[0 for i in range(width)] for j in range(height)]
+    for i in range(height):
+        for j in range(width):
+            strategy_heatmap[i][j] = popu[i*height+j].get_strategy()
+    strategy_heatmap_pd = pd.DataFrame(strategy_heatmap)
+    strategy_heatmap_pd.to_csv(heatmap_f)
+    heatmap_f.close()
+
     for _ in range(run_time):
         popu = evolution_one_step(popu, total_num, edges, b, cost)
-    return popu, network, total_num, edges
+        strategy_dist = [0 for _ in range(3)]
+        for i in range(total_num):
+            strategy_dist[popu[i].get_strategy()] += 1
+        strategy_dist = np.array(strategy_dist) / total_num
+        result_t.append(strategy_dist)
+
+        heatmap_file_name = heatmap_dir_name + 'heatmap_%s.csv' % (_+1)
+        heatmap_f = open(heatmap_file_name, 'w')
+        strategy_heatmap = [[0 for i in range(width)] for j in range(height)]
+        for i in range(height):
+            for j in range(width):
+                strategy_heatmap[i][j] = popu[i * height + j].get_strategy()
+        strategy_heatmap_pd = pd.DataFrame(strategy_heatmap)
+        strategy_heatmap_pd.to_csv(heatmap_f)
+        heatmap_f.close()
+
+    return popu, network, total_num, edges, result_t
 
 
-def evaluation(popu, edges, b, cost, sample_time):
-    sample_time = sample_time
+def evaluation(popu, edges, b, cost):
+    sample_time = 100
     sample_strategy = []
     total_num = len(popu)
     for _ in range(sample_time):
@@ -132,52 +170,33 @@ def evaluation(popu, edges, b, cost, sample_time):
             strategy_dist[popu[i].get_strategy()] += 1
         strategy_dist = np.array(strategy_dist) / total_num
         sample_strategy.append(strategy_dist)
-    # return np.mean(sample_strategy, axis=0)
-    return sample_strategy
+    return np.mean(sample_strategy, axis=0)
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_c_cost_b_local_learn_bridge_lattice"
-    log_file_name = "./logs/log_%s.txt" % simulation_name
-    logger = create_logger(name=simulation_name, file_name=log_file_name)
-
-    abs_path = os.path.abspath(os.path.join(os.getcwd(), './'))
-    dir_name = abs_path + '/results/'
-    if not os.path.isdir(dir_name):
-        os.makedirs(dir_name)
-    result_file_name = dir_name + "results_%s.csv" % simulation_name
-    f = open(result_file_name, 'w')
-
-    run_time_r = 1000
-    sample_time_r = 200
-    init_num = 10
     cost_r_l = []
     for i in np.arange(0.0, 1.01, 0.1):
         cost_r_l.append(round(i, 2))
     b_r_l = []
     for i in np.arange(1.0, 3.01, 0.1):
         b_r_l.append(round(i, 2))
-    result_l = []
     for cost_r in cost_r_l:
         for b_r in b_r_l:
+            simulation_name = "time_pd_c_cost_r_%s_b_r_%s" % (cost_r, b_r)
+            log_file_name = "./logs/log_%s.txt" % simulation_name
+            logger = create_logger(name=simulation_name, file_name=log_file_name)
+
             logger.info('cost value: ' + str(cost_r))
             logger.info("b value: " + str(b_r))
-            result = []
-            for _ in range(init_num):
-                popu_r, network_r, total_num_r, edges_r = run(b_r, cost_r, run_time_r)
-                #result.append(evaluation(popu_r, edges_r, b_r, cost_r))
-                sample_result = evaluation(popu_r, edges_r, b_r, cost_r, sample_time_r)
-                for sample_i in sample_result:
-                    result_l.append(sample_i)
-            # result = np.mean(result, axis=0)
-            # logger.info("frac_co: " + str(result))
-            # result_l.append(result)
-    init_num_l = list(range(init_num))
-    sample_l = list(range(sample_time_r))  # 200 for sample time
-    m_index = pd.MultiIndex.from_product([cost_r_l, b_r_l, init_num_l, sample_l], names=['cost', 'b', 'init', 'sample'])
-    result_pd = pd.DataFrame(result_l, index=m_index)
-    result_pd.to_csv(f)
-    f.close()
+            abs_path = os.path.abspath(os.path.join(os.getcwd(), './'))
+            dir_name = abs_path + '/results/time/pd_c_cost_b_local_learn_bridge_lattice/'
+            if not os.path.isdir(dir_name):
+                os.makedirs(dir_name)
+            result_file_name = dir_name + "results_%s.csv" % simulation_name
+            f = open(result_file_name, 'w')
 
-
-
+            popu_r, network_r, total_num_r, edges_r, result_t_r = run_time(b_r, cost_r, dir_name, simulation_name)
+            index = np.arange(1001)
+            result_t_pd = pd.DataFrame(result_t_r, index=index)
+            result_t_pd.to_csv(f)
+            f.close()
