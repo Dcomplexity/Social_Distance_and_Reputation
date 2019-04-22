@@ -50,7 +50,7 @@ class Agent:
 
 
 def initialize_population():
-    network, total_num, edges = generate_network(structure='2d_grid', xdim=100, ydim=100)
+    network, total_num, edges = generate_network(structure='2d_grid')
     popu = []
     for i in range(total_num):
         popu.append(Agent(i, network[i], np.random.choice([0, 1, 2])))
@@ -93,19 +93,26 @@ def evolution_one_step(popu, total_num, edges, b, cost):
     # Update strategy by imitating others' strategy
     for i in range(total_num):
         ind = popu[i]
-        ind_payoffs = ind.get_payoffs()
-        while True:
-            j = random.choice(range(total_num))
-            if j != i:
-                break
-        # j = random.choice(popu[i].get_link())
-        opponent = popu[j]
-        opponent_payoffs = opponent.get_payoffs()
-        opponent_ostrategy = opponent.get_ostrategy()
-        t1 = 1 / (1 + math.e ** (2.0 * (ind_payoffs - opponent_payoffs)))
-        t2 = random.random()
-        if t2 < t1:
-            ind.set_strategy(opponent_ostrategy)
+        w1 = 0.01
+        w2 = random.random()
+        if w2 < w1:
+            potential_strategy = [0, 1, 2]
+            potential_strategy.remove(ind.get_ostrategy())
+            ind.set_strategy(np.random.choice(potential_strategy))
+        else:
+            ind_payoffs = ind.get_payoffs()
+            while True:
+                j = random.choice(range(total_num))
+                if j != i:
+                    break
+            # j = random.choice(popu[i].get_link())
+            opponent = popu[j]
+            opponent_payoffs = opponent.get_payoffs()
+            opponent_ostrategy = opponent.get_ostrategy()
+            t1 = 1 / (1 + math.e ** (2.0 * (ind_payoffs - opponent_payoffs)))
+            t2 = random.random()
+            if t2 < t1:
+                ind.set_strategy(opponent_ostrategy)
     return popu
 
 
