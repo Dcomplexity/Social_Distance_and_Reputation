@@ -144,9 +144,9 @@ if __name__ == "__main__":
     result_file_name = dir_name + "results_%s.csv" % simulation_name
     f = open(result_file_name, 'w')
 
-    run_time_r = 2
-    sample_time_r = 2
-    init_num = 2
+    run_time_r = 800
+    sample_time_r = 200
+    init_num = 10
     cost_r_l = []
     for i in np.arange(0.0, 1.01, 0.1):
         cost_r_l.append(round(i, 2))
