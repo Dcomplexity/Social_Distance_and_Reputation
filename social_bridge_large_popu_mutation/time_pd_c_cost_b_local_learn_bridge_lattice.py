@@ -103,11 +103,11 @@ def evolution_one_step(popu, total_num, edges, b, cost):
             ind.set_strategy(np.random.choice(potential_strategy))
         else:
             ind_payoffs = ind.get_payoffs()
-            while True:
-                j = random.choice(range(total_num))
-                if j != i:
-                    break
-            # j = random.choice(popu[i].get_link())
+            # while True:
+            #     j = random.choice(range(total_num))
+            #     if j != i:
+            #         break
+            j = random.choice(popu[i].get_link())
             opponent = popu[j]
             opponent_payoffs = opponent.get_payoffs()
             opponent_ostrategy = opponent.get_ostrategy()
