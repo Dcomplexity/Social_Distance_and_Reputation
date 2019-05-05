@@ -42,6 +42,27 @@ def generate_network(structure, xdim=40, ydim=40, nodes_num=1600, edge_num=2):
         return "No this type of structure"
 
 
+def generate_er_random_connected(degree, nodes_num):
+    g_network = nx.erdos_renyi_graph(nodes_num, p=degree/(nodes_num-1))
+    gen_num = 0
+    while not nx.is_connected(g_network):
+        print(gen_num)
+        g_network = nx.erdos_renyi_graph(nodes_num, p=degree/(nodes_num-1))
+        gen_num += 1
+        if gen_num > 50:
+            print("Not found connected network")
+            return None
+    adj_array = nx.to_numpy_array(g_network)
+    adj_link = []
+    for i in range(adj_array.shape[0]):
+        adj_link.append(list(np.where(adj_array[i] == 1)[0]))
+    population_num = nodes_num
+    g_edge = nx.Graph()
+    for i in range(len(adj_link)):
+        for j in range(len(adj_link[i])):
+            g_edge.add_edge(i, adj_link[i][j])
+    return adj_link, population_num, g_edge.edges()
+
 if __name__ == "__main__":
     adj_link_r, population_num_r, g_edge_r = generate_network("ba_graph")
     logger = create_logger("ba_graph", file_name="./logs/log_network.txt")
