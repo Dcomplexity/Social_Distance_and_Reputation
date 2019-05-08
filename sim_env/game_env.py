@@ -15,7 +15,20 @@ def pd_game_donation_game(st_x, st_y, b):
         return "Error"
 
 
-def pd_game_cost_donation_game(st_x, st_y, b):
+def pd_game_c_cost_donation(st_x, st_y, b):
+    if (st_x == 1 or st_x == 2) and (st_y == 1 or st_y == 2):
+        return b-1, b-1
+    elif (st_x == 1 or st_x == 2) and (st_y == 0):
+        return -1, b
+    elif (st_x == 0) and (st_y == 1 or st_y == 2):
+        return b, -1
+    elif (st_x == 0) and (st_y == 0):
+        return 0, 0
+    else:
+        return "Error"
+
+
+def pd_game_cost_donation(st_x, st_y, b):
     if (st_x == 2 or st_x == 3) and (st_y == 2 or st_y == 3):
         return b-1, b-1
     elif (st_x == 2 or st_x == 3) and (st_y == 0 or st_y == 1):
