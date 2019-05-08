@@ -84,7 +84,7 @@ def evolution_one_step(popu, total_num, edges, b, cost):
                     j_action = 0
                 else:
                     j_action = 1
-            r_i, r_j = pd_game_c_cost_donation(i_action, j_action, b)
+            r_i, r_j = pd_game_c_cost_b(i_action, j_action, b)
             popu[i].add_payoffs(r_i)
             popu[j].add_payoffs(r_j)
     for i in range(total_num):
@@ -112,7 +112,7 @@ def evolution_one_step(popu, total_num, edges, b, cost):
                                 co_j_action = 0
                             else:
                                 co_j_action = 1
-                        r_i, r_j = pd_game_c_cost_donation(co_i_action, co_j_action, b)
+                        r_i, r_j = pd_game_c_cost_b(co_i_action, co_j_action, b)
                         popu[co_i].add_payoffs(r_i)
                         popu[co_j].add_payoffs(r_j)
     # Backup the strategy in this round
@@ -168,7 +168,7 @@ def evaluation(popu, edges, b, cost, sample_time):
 
 
 if __name__ == "__main__":
-    simulation_name = "pd_c_cost_donation_random_ind_lattice"
+    simulation_name = "pd_c_cost_b_random_ind_lattice"
     log_file_name = "./logs/log_%s.txt" % simulation_name
     logger = create_logger(name=simulation_name, file_name=log_file_name)
 
