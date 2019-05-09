@@ -81,7 +81,8 @@ def generate_er_random_connected(degree, nodes_num):
     return adj_link, population_num, g_edge.edges()
 
 if __name__ == "__main__":
-    adj_link_r, population_num_r, g_edge_r = generate_network(structure='triangular_lattice')
+    adj_link_r, population_num_r, g_edge_r = generate_network(structure='2d_grid')
+    print(adj_link_r)
     logger = create_logger("ba_graph", file_name="./logs/log_network.txt")
     logger.info(adj_link_r)
     logger.info(population_num_r)
